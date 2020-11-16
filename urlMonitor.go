@@ -1,14 +1,21 @@
 package main
 
-import "fmt"
-import "os"
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+)
+
+const maxTries = 3
+const delay = 2 * time.Second
 
 func main() {
 
 	showIntroduction()
 
 	for {
+
 		showMenu()
 
 		var cmd int = readCommand()
@@ -35,7 +42,7 @@ func showIntroduction() {
 }
 
 func showMenu() {
-	fmt.Println("\nMenu\n1 - Start monitoring\n2 - Show logs\n3 - Exit program\n")
+	fmt.Println("\nMenu\n1 - Start monitoring\n2 - Show logs\n0 - Exit program\n")
 }
 
 func readCommand() int {
@@ -53,7 +60,7 @@ func readCommand() int {
 
 func startUrlMonitor() {
 
-	fmt.Println("Monitoring urls...")
+	fmt.Println("Monitoring urls...\n")
 
 	urls := []string{
 		"https://random-status-code.herokuapp.com/",
@@ -62,14 +69,23 @@ func startUrlMonitor() {
 		"https://random-status-code.herokuapp.com/",
 	}
 
-	for _, url := range urls {
-
-		var res, _ = http.Get(url)
-
-		if res.StatusCode == 200 {
-			fmt.Println("Url:", url, "Success")
-		} else {
-			fmt.Println("Url:", url, "Error: ", res.StatusCode)
+	for i := 0; i < maxTries; i++ {
+		for _, url := range urls {
+			testUrl(url)
 		}
+
+		fmt.Println("\nWaiting for next tests...\n")
+		time.Sleep(delay)
+	}
+}
+
+func testUrl(url string) {
+
+	var res, _ = http.Get(url)
+
+	if res.StatusCode >= 200 && res.StatusCode < 300 {
+		fmt.Println("Url:", url, "Success:", res.StatusCode)
+	} else {
+		fmt.Println("Url:", url, "Error: ", res.StatusCode)
 	}
 }
