@@ -127,5 +127,12 @@ func readUrlsFile() []string {
 		urls = append(urls, strings.TrimSpace(row))
 	}
 
+	err = file.Close()
+
+	if err != nil {
+		fmt.Println("Error on closing file", file.Name())
+		fmt.Println(err)
+	}
+
 	return urls
 }
