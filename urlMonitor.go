@@ -41,22 +41,35 @@ func showMenu() {
 func readCommand() int {
 
 	var cmd int
-	fmt.Scan(&cmd)
+	_, err := fmt.Scan(&cmd)
+
+	if err != nil {
+		fmt.Println("Error on reading command:", err.Error())
+		return 0
+	}
 
 	return cmd
 }
 
 func startUrlMonitor() {
 
-	fmt.Println("Monitoring url...")
+	fmt.Println("Monitoring urls...")
 
-	url := "https://random-status-code.herokuapp.com/"
+	urls := []string{
+		"https://random-status-code.herokuapp.com/",
+		"https://random-status-code.herokuapp.com/",
+		"https://random-status-code.herokuapp.com/",
+		"https://random-status-code.herokuapp.com/",
+	}
 
-	var res, _ = http.Get(url)
+	for _, url := range urls {
 
-	if res.StatusCode == 200 {
-		fmt.Println("Url:", url, "Success")
-	} else {
-		fmt.Println("Url:", url, "Error: ", res.StatusCode)
+		var res, _ = http.Get(url)
+
+		if res.StatusCode == 200 {
+			fmt.Println("Url:", url, "Success")
+		} else {
+			fmt.Println("Url:", url, "Error: ", res.StatusCode)
+		}
 	}
 }
