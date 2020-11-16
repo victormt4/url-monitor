@@ -90,8 +90,12 @@ func testUrl(url string) {
 
 	if res.StatusCode >= 200 && res.StatusCode < 300 {
 		fmt.Println("Url:", url, "Success:", res.StatusCode)
+	} else if res.StatusCode > 200 && res.StatusCode < 400 {
+		fmt.Println("Url:", url, "Redirect:", res.StatusCode)
+	} else if res.StatusCode >= 400 && res.StatusCode < 500 {
+		fmt.Println("Url:", url, "Client error:", res.StatusCode)
 	} else {
-		fmt.Println("Url:", url, "Error: ", res.StatusCode)
+		fmt.Println("Url:", url, "Server error: ", res.StatusCode)
 	}
 }
 
