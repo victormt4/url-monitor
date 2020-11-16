@@ -1,14 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
 const maxTries = 3
 const delay = 2 * time.Second
+
+const urlFile = "urls.txt"
 
 func main() {
 
@@ -92,14 +97,34 @@ func testUrl(url string) {
 
 func readUrlsFile() []string {
 
+	fmt.Println("Reading file", urlFile, "\n")
+
 	var urls []string
 
-	_, err := os.Open("urls.txt")
+	file, err := os.Open(urlFile)
 
 	if err != nil {
 		fmt.Println("Error on opening file")
 		fmt.Println(err)
 		os.Exit(-1)
+	}
+
+	reader := bufio.NewReader(file)
+
+	for {
+
+		row, err := reader.ReadString('\n')
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			fmt.Println("Error on reading line")
+			fmt.Println(err)
+		}
+
+		urls = append(urls, strings.TrimSpace(row))
 	}
 
 	return urls
