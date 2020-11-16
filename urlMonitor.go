@@ -51,7 +51,7 @@ func readCommand() int {
 	_, err := fmt.Scan(&cmd)
 
 	if err != nil {
-		fmt.Println("Error on reading command:", err.Error())
+		fmt.Println("Error on reading command:", err)
 		return 0
 	}
 
@@ -62,12 +62,7 @@ func startUrlMonitor() {
 
 	fmt.Println("Monitoring urls...\n")
 
-	urls := []string{
-		"https://random-status-code.herokuapp.com/",
-		"https://random-status-code.herokuapp.com/",
-		"https://random-status-code.herokuapp.com/",
-		"https://random-status-code.herokuapp.com/",
-	}
+	urls := readUrlsFile()
 
 	for i := 0; i < maxTries; i++ {
 		for _, url := range urls {
@@ -81,11 +76,31 @@ func startUrlMonitor() {
 
 func testUrl(url string) {
 
-	var res, _ = http.Get(url)
+	var res, err = http.Get(url)
+
+	if err != nil {
+		fmt.Println("Error on requesting url", url)
+		fmt.Println(err)
+	}
 
 	if res.StatusCode >= 200 && res.StatusCode < 300 {
 		fmt.Println("Url:", url, "Success:", res.StatusCode)
 	} else {
 		fmt.Println("Url:", url, "Error: ", res.StatusCode)
 	}
+}
+
+func readUrlsFile() []string {
+
+	var urls []string
+
+	_, err := os.Open("urls.txt")
+
+	if err != nil {
+		fmt.Println("Error on opening file")
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+
+	return urls
 }
