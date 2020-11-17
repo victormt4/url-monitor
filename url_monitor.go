@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+	"url-monitor/utils/errorutils"
+	"url-monitor/utils/fileutils"
 )
 
 const maxTries = 3
@@ -100,9 +100,9 @@ func testUrl(url string) {
 		} else if res.StatusCode > 200 && res.StatusCode < 400 {
 			fmt.Println("Url:", url, "Redirect:", res.StatusCode)
 		} else if res.StatusCode >= 400 && res.StatusCode < 500 {
-			fmt.Println("Url:", url, "Client error:", res.StatusCode)
+			fmt.Println("Url:", url, "Client errorutils:", res.StatusCode)
 		} else {
-			fmt.Println("Url:", url, "Server error: ", res.StatusCode)
+			fmt.Println("Url:", url, "Server errorutils: ", res.StatusCode)
 		}
 	}
 }
@@ -113,7 +113,7 @@ func readUrlsFile() []string {
 
 	var urls []string
 
-	file := openFile(urlFilepath, os.O_RDONLY, os.ModePerm)
+	file := fileutils.OpenFile(urlFilepath, os.O_RDONLY, os.ModePerm)
 
 	reader := bufio.NewReader(file)
 
@@ -125,12 +125,12 @@ func readUrlsFile() []string {
 			break
 		}
 
-		checkError(err)
+		errorutils.CheckError(err)
 
 		urls = append(urls, strings.TrimSpace(row))
 	}
 
-	closeFile(file)
+	fileutils.CloseFile(file)
 
 	fmt.Println("Found", len(urls), "urls\n")
 
@@ -139,47 +139,16 @@ func readUrlsFile() []string {
 
 func writeLog(url string, statusCode int) {
 
-	file := openFile(logFilepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	file := fileutils.OpenFile(logFilepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
 
-	writeStringToFile(file, time.Now().Format(time.RFC3339)+" Url: "+url+" Status Code: "+strconv.Itoa(statusCode)+"\n")
-
-	closeFile(file)
+	fileutils.WriteStringToFile(file, time.Now().Format(time.RFC3339)+" Url: "+url+" Status Code: "+strconv.Itoa(statusCode)+"\n")
+	fileutils.CloseFile(file)
 }
 
 func showLogs() {
 	fmt.Println("\nShowing logs...\n")
 
-	bytes := readFile(logFilepath)
+	bytes := fileutils.ReadFile(logFilepath)
 
 	fmt.Println(string(bytes))
-}
-
-func openFile(filepath string, flag int, perm os.FileMode) *os.File {
-	file, err := os.OpenFile(filepath, flag, perm)
-	checkError(err)
-
-	return file
-}
-
-func readFile(filepath string) []byte {
-	bytes, err := ioutil.ReadFile(filepath)
-	checkError(err)
-
-	return bytes
-}
-
-func closeFile(file *os.File) {
-	err := file.Close()
-	checkError(err)
-}
-
-func writeStringToFile(file *os.File, str string) {
-	_, err := file.WriteString(str)
-	checkError(err)
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
