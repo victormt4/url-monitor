@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -15,8 +16,8 @@ import (
 const maxTries = 3
 const delay = 2 * time.Second
 
-const urlFile = "urls.txt"
-const logFile = "log.txt"
+const urlFilepath = "urls.txt"
+const logFilepath = "log.txt"
 
 func main() {
 
@@ -32,6 +33,7 @@ func main() {
 		case 1:
 			startUrlMonitor()
 		case 2:
+			showLogs()
 		case 0:
 			os.Exit(0)
 		default:
@@ -107,11 +109,11 @@ func testUrl(url string) {
 
 func readUrlsFile() []string {
 
-	fmt.Println("Reading file", urlFile, "\n")
+	fmt.Println("Reading file", urlFilepath, "\n")
 
 	var urls []string
 
-	file, err := os.Open(urlFile)
+	file, err := os.Open(urlFilepath)
 
 	if err != nil {
 		fmt.Println("Error on opening file")
@@ -149,31 +151,46 @@ func readUrlsFile() []string {
 
 func writeLog(url string, statusCode int) {
 
-	file := openFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	file := openFile(logFilepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
 
 	writeStringToFile(file, time.Now().Format(time.RFC3339)+" Url: "+url+" Status Code: "+strconv.Itoa(statusCode)+"\n")
 
 	closeFile(file)
 }
 
+func showLogs() {
+	fmt.Println("\nShowing logs...\n")
+
+	bytes := readFile(logFilepath)
+
+	fmt.Println(string(bytes))
+}
+
 func openFile(filepath string, flag int, perm os.FileMode) *os.File {
 	file, err := os.OpenFile(filepath, flag, perm)
-	logFatalErr(err)
+	checkError(err)
 
 	return file
 }
 
+func readFile(filepath string) []byte {
+	bytes, err := ioutil.ReadFile(filepath)
+	checkError(err)
+
+	return bytes
+}
+
 func closeFile(file *os.File) {
 	err := file.Close()
-	logFatalErr(err)
+	checkError(err)
 }
 
 func writeStringToFile(file *os.File, str string) {
 	_, err := file.WriteString(str)
-	logFatalErr(err)
+	checkError(err)
 }
 
-func logFatalErr(err error) {
+func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
