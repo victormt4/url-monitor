@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -14,6 +16,7 @@ const maxTries = 3
 const delay = 2 * time.Second
 
 const urlFile = "urls.txt"
+const logFile = "log.txt"
 
 func main() {
 
@@ -86,16 +89,19 @@ func testUrl(url string) {
 	if err != nil {
 		fmt.Println("Error on requesting url", url)
 		fmt.Println(err)
-	}
-
-	if res.StatusCode >= 200 && res.StatusCode < 300 {
-		fmt.Println("Url:", url, "Success:", res.StatusCode)
-	} else if res.StatusCode > 200 && res.StatusCode < 400 {
-		fmt.Println("Url:", url, "Redirect:", res.StatusCode)
-	} else if res.StatusCode >= 400 && res.StatusCode < 500 {
-		fmt.Println("Url:", url, "Client error:", res.StatusCode)
 	} else {
-		fmt.Println("Url:", url, "Server error: ", res.StatusCode)
+
+		writeLog(url, res.StatusCode)
+
+		if res.StatusCode >= 200 && res.StatusCode < 300 {
+			fmt.Println("Url:", url, "Success:", res.StatusCode)
+		} else if res.StatusCode > 200 && res.StatusCode < 400 {
+			fmt.Println("Url:", url, "Redirect:", res.StatusCode)
+		} else if res.StatusCode >= 400 && res.StatusCode < 500 {
+			fmt.Println("Url:", url, "Client error:", res.StatusCode)
+		} else {
+			fmt.Println("Url:", url, "Server error: ", res.StatusCode)
+		}
 	}
 }
 
@@ -139,4 +145,36 @@ func readUrlsFile() []string {
 	}
 
 	return urls
+}
+
+func writeLog(url string, statusCode int) {
+
+	file := openFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
+
+	writeStringToFile(file, time.Now().Format(time.RFC3339)+" Url: "+url+" Status Code: "+strconv.Itoa(statusCode)+"\n")
+
+	closeFile(file)
+}
+
+func openFile(filepath string, flag int, perm os.FileMode) *os.File {
+	file, err := os.OpenFile(filepath, flag, perm)
+	logFatalErr(err)
+
+	return file
+}
+
+func closeFile(file *os.File) {
+	err := file.Close()
+	logFatalErr(err)
+}
+
+func writeStringToFile(file *os.File, str string) {
+	_, err := file.WriteString(str)
+	logFatalErr(err)
+}
+
+func logFatalErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
