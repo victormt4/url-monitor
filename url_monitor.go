@@ -113,13 +113,7 @@ func readUrlsFile() []string {
 
 	var urls []string
 
-	file, err := os.Open(urlFilepath)
-
-	if err != nil {
-		fmt.Println("Error on opening file")
-		fmt.Println(err)
-		os.Exit(-1)
-	}
+	file := openFile(urlFilepath, os.O_RDONLY, os.ModePerm)
 
 	reader := bufio.NewReader(file)
 
@@ -131,20 +125,14 @@ func readUrlsFile() []string {
 			break
 		}
 
-		if err != nil {
-			fmt.Println("Error on reading line")
-			fmt.Println(err)
-		}
+		checkError(err)
 
 		urls = append(urls, strings.TrimSpace(row))
 	}
 
-	err = file.Close()
+	closeFile(file)
 
-	if err != nil {
-		fmt.Println("Error on closing file", file.Name())
-		fmt.Println(err)
-	}
+	fmt.Println("Found", len(urls), "urls\n")
 
 	return urls
 }
