@@ -3,7 +3,7 @@ package fileutils
 import (
 	"io/ioutil"
 	"os"
-	"url-monitor/utils/errorutils"
+	"urlmonitor/utils/errorutils"
 )
 
 func OpenFile(filepath string, flag int, perm os.FileMode) *os.File {

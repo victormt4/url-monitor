@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"url-monitor/utils/errorutils"
-	"url-monitor/utils/fileutils"
+	"urlmonitor/utils/errorutils"
+	"urlmonitor/utils/fileutils"
 )
 
 const maxTries = 3
